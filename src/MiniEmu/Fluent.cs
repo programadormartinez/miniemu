@@ -120,7 +120,8 @@ static class Icons
         using (var g = Graphics.FromImage(bitmap))
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            DrawGlyph(g, Glyph.Phone, Theme.Dark ? Color.White : Color.FromArgb(26, 26, 26),
+            // MiniEmu.Glyph: dentro de Icons, "Glyph" a secas es el método de arriba.
+            DrawGlyph(g, MiniEmu.Glyph.Phone, Theme.Dark ? Color.White : Color.FromArgb(26, 26, 26),
                 new RectangleF(0, 0, size, size), size * 0.95f);
             if (anyRunning)
             {
