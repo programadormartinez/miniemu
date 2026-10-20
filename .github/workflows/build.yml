@@ -1,0 +1,44 @@
+name: Build
+
+# Cada push a main compila (es la verificación del proyecto).
+# Un tag vX.Y.Z además publica la release con los .exe que baja install.ps1.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        rid: [win-x64, win-arm64]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish
+        shell: pwsh
+        run: |
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '0.0.0-dev' }
+          dotnet publish src/MiniEmu/MiniEmu.csproj -c Release -r ${{ matrix.rid }} -p:Version=$version -o out
+          Rename-Item out/MiniEmu.exe "MiniEmu-${{ matrix.rid }}.exe"
+
+      - name: Attach to release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view ${{ github.ref_name }} 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create ${{ github.ref_name }} --title "MiniEmu ${{ github.ref_name }}" --generate-notes
+          }
+          gh release upload ${{ github.ref_name }} "out/MiniEmu-${{ matrix.rid }}.exe" --clobber
