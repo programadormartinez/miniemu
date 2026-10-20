@@ -219,7 +219,8 @@ sealed class FluentMenuRenderer : ToolStripRenderer
 
     protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
     {
-        float scale = Scale(e.ToolStrip);
+        // ToolStripArrowRenderEventArgs no tiene ToolStrip: se llega por el ítem.
+        float scale = Scale(e.Item?.Owner);
         var rect = e.ArrowRectangle;
         rect.Offset((int)(-6 * scale), 0); // aire contra el borde derecho
         using var font = new Font(Theme.IconFamily, 7f);
