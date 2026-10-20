@@ -190,8 +190,8 @@ sealed class FluentMenuRenderer : ToolStripRenderer
     protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
     {
         if (!e.Item.Selected || !e.Item.Enabled) return;
-        float scale = (e.ToolStrip?.DeviceDpi ?? 96) / 96f;
-        var rect = new RectangleF(4 * scale, 1 * scale, e.Item.Width - 8 * scale, e.Item.Height - 2 * scale);
+        float scale = Scale(e.ToolStrip);
+        var rect = new RectangleF(0, 1 * scale, e.Item.Width, e.Item.Height - 2 * scale);
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         using var path = Rounded(rect, 4 * scale);
         using var brush = new SolidBrush(Theme.Hover);
@@ -200,31 +200,43 @@ sealed class FluentMenuRenderer : ToolStripRenderer
 
     protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
     {
+        var item = e.Item;
         // El texto real es "&1Pixel_8" para que el 1 funcione como atajo; mostramos solo el nombre.
-        if (e.Item.Tag is DeviceTag device && e.Text == e.Item.Text) e.Text = device.Name;
-        e.TextColor = e.Item.Tag switch
+        var text = item.Tag is DeviceTag device && e.Text == item.Text ? device.Name : e.Text;
+        var color = item.Tag switch
         {
             Header => Theme.SecondaryText,
             Danger => Theme.Danger,
-            _ => e.Item.Enabled ? Theme.Text : Theme.SecondaryText,
+            _ => item.Enabled ? Theme.Text : Theme.SecondaryText,
         };
-        base.OnRenderItemText(e);
+        // Centrado sobre el alto completo del ítem. El rectángulo que calcula
+        // WinForms ignora el Padding vertical y deja el texto más arriba que el ícono.
+        var bounds = new Rectangle(e.TextRectangle.X, 0, e.TextRectangle.Width, item.Height);
+        TextRenderer.DrawText(e.Graphics, text, e.TextFont, bounds, color,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine |
+            TextFormatFlags.EndEllipsis | TextFormatFlags.HidePrefix | TextFormatFlags.NoPadding);
     }
 
     protected override void OnRenderArrow(ToolStripArrowRenderEventArgs e)
     {
+        float scale = Scale(e.ToolStrip);
+        var rect = e.ArrowRectangle;
+        rect.Offset((int)(-6 * scale), 0); // aire contra el borde derecho
         using var font = new Font(Theme.IconFamily, 7f);
-        TextRenderer.DrawText(e.Graphics, Glyph.ChevronRight.ToString(), font, e.ArrowRectangle, Theme.SecondaryText,
+        TextRenderer.DrawText(e.Graphics, Glyph.ChevronRight.ToString(), font, rect, Theme.SecondaryText,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
     }
 
     protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
     {
-        float scale = (e.ToolStrip?.DeviceDpi ?? 96) / 96f;
+        float scale = Scale(e.ToolStrip);
         int y = e.Item.Height / 2;
+        int inset = (int)(8 * scale);
         using var pen = new Pen(Theme.Separator, Math.Max(1f, scale));
-        e.Graphics.DrawLine(pen, 0, y, e.Item.Width, y);
+        e.Graphics.DrawLine(pen, inset, y, e.Item.Width - inset, y);
     }
+
+    static float Scale(ToolStrip? strip) => (strip?.DeviceDpi ?? 96) / 96f;
 
     static GraphicsPath Rounded(RectangleF r, float radius)
     {
@@ -251,8 +263,9 @@ static class MenuStyle
         dropDown.BackColor = Theme.Background;
         int icon = dropDown.LogicalToDeviceUnits(16);
         dropDown.ImageScalingSize = new Size(icon, icon);
-        int vertical = dropDown.LogicalToDeviceUnits(4);
-        dropDown.Padding = new Padding(0, vertical, 0, vertical);
+        // Margen interno: el hover y los separadores no tocan el borde redondeado.
+        int inset = dropDown.LogicalToDeviceUnits(4);
+        dropDown.Padding = new Padding(inset, inset, inset, inset);
         if (dropDown is ToolStripDropDownMenu menu)
         {
             menu.ShowCheckMargin = false;

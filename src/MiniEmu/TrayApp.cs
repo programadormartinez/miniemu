@@ -164,7 +164,8 @@ sealed class TrayApp : ApplicationContext
     void BuildMenu()
     {
         iconSize = menu.LogicalToDeviceUnits(16);
-        int vertical = menu.LogicalToDeviceUnits(6);
+        // ~30 px por ítem a 100 %, como los menús nativos de Windows 11.
+        int vertical = menu.LogicalToDeviceUnits(4);
         itemPadding = new Padding(0, vertical, menu.LogicalToDeviceUnits(8), vertical);
 
         menu.SuspendLayout();
@@ -208,12 +209,14 @@ sealed class TrayApp : ApplicationContext
         if (section.Count == 0) return;
         if (menu.Items.Count > 0) menu.Items.Add(new ToolStripSeparator());
 
-        int left = menu.LogicalToDeviceUnits(12);
-        menu.Items.Add(new ToolStripLabel(title)
+        // Un ítem deshabilitado (no un ToolStripLabel) para que el título quede en la
+        // misma columna que los nombres.
+        menu.Items.Add(new ToolStripMenuItem(title)
         {
+            Enabled = false,
             Font = Theme.HeaderFont,
             Tag = FluentMenuRenderer.Header,
-            Margin = new Padding(left, menu.LogicalToDeviceUnits(4), 0, menu.LogicalToDeviceUnits(2)),
+            Padding = new Padding(0, menu.LogicalToDeviceUnits(4), 0, 0),
         });
         for (int i = 0; i < section.Count; i++)
         {
