@@ -3,18 +3,25 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
+    <!-- WPF para el panel; WinForms solo para el ícono de la bandeja y TaskDialog. -->
+    <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AssemblyName>MiniEmu</AssemblyName>
     <RootNamespace>MiniEmu</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.3.0</Version>
     <Product>MiniEmu</Product>
     <Description>Lanzá emuladores de Android desde la bandeja de Windows.</Description>
     <!-- Permite compilar desde macOS/Linux; la app igual solo corre en Windows. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
+
+  <!-- WPF y WinForms comparten nombres (Application, Clipboard, Color...): cada archivo importa lo suyo. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
 
   <!-- Un solo .exe que no necesita .NET instalado. El RID (win-x64 / win-arm64) lo pasa el publish. -->
   <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">

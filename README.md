@@ -25,12 +25,20 @@ Necesitás el Android SDK, que viene con Android Studio. MiniEmu lo busca en
 
 ## Usar
 
-Click en el ícono de la bandeja, o **Alt + Shift + E** desde cualquier lado.
-Con el menú abierto, los emuladores se eligen con 1…9 y 0.
+Click en el ícono de la bandeja, o **Alt + Shift + E** desde cualquier lado: se
+abre un panel al estilo de Windows 11 (fondo acrílico, claro u oscuro según tu
+barra de tareas) con una tarjeta por emulador y por dispositivo. Mientras está
+abierto se actualiza solo.
+
+- **Click en la tarjeta**: inicia el emulador o trae su ventana al frente.
+- **▶ / ■**: iniciar o apagar.
+- **⋯**: el resto de las acciones.
+- **1…9 y 0**: abren los primeros diez emuladores. **Esc** cierra el panel.
 
 | En cada emulador | Encendido | Apagado |
 | --- | --- | --- |
-| Iniciar / mostrar su ventana (click en el nombre) | ✓ | ✓ |
+| Iniciar / mostrar su ventana (click en la tarjeta) | ✓ | ✓ |
+| Apagar (■) | ✓ | |
 | Copiar nombre | ✓ | ✓ |
 | Copiar ID de ADB | ✓ | |
 | Arranque en frío (`-no-snapshot`), iniciar sin audio (`-no-audio`) | | ✓ |

@@ -1,0 +1,117 @@
+<Window x:Class="MiniEmu.FlyoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MiniEmu"
+        Width="380"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Topmost="True"
+        WindowStartupLocation="Manual"
+        Background="{DynamicResource FallbackBackground}"
+        Foreground="{DynamicResource TextPrimary}"
+        FontFamily="{StaticResource TextFont}"
+        FontSize="13"
+        UseLayoutRounding="True">
+
+    <!-- Sin barra de título, pero con el marco de DWM: así hay sombra, esquinas
+         redondeadas y fondo acrílico. -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="-1" ResizeBorderThickness="0"
+                      CornerRadius="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <DataTemplate x:Key="DeviceCard">
+            <Border Style="{StaticResource Card}" Cursor="Hand" MouseLeftButtonUp="Card_MouseLeftButtonUp">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Width="36" Height="36" CornerRadius="8" Background="{DynamicResource IconTile}"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding IconGlyph}" FontFamily="{StaticResource IconFont}" FontSize="18"
+                                   Foreground="{DynamicResource Accent}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" />
+                        <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                            <Ellipse x:Name="Dot" Width="7" Height="7" VerticalAlignment="Center"
+                                     Fill="{DynamicResource TextSecondary}" />
+                            <TextBlock Text="{Binding Status}" Margin="6,0,0,0" FontSize="12"
+                                       Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Style="{StaticResource IconButton}"
+                            Content="{Binding PrimaryGlyph}" ToolTip="{Binding PrimaryTip}"
+                            Visibility="{Binding PrimaryVisibility}" Click="Primary_Click" />
+                    <Button Grid.Column="3" Style="{StaticResource IconButton}" Margin="2,0,0,0"
+                            Content="&#xE712;" ToolTip="Más acciones" Click="More_Click" />
+                </Grid>
+            </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                    <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource Success}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Border x:Name="Root">
+        <StackPanel>
+            <!-- Encabezado -->
+            <Grid Margin="16,12,10,4">
+                <TextBlock Text="MiniEmu" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource IconButton}" ToolTip="Actualizar" Click="Refresh_Click">
+                        <TextBlock x:Name="RefreshGlyph" Text="&#xE72C;" />
+                    </Button>
+                    <Button Style="{StaticResource IconButton}" Margin="2,0,0,0" Content="&#xE713;"
+                            ToolTip="Opciones" Click="AppMenu_Click" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Dispositivos -->
+            <ScrollViewer MaxHeight="480" VerticalScrollBarVisibility="Hidden"
+                          HorizontalScrollBarVisibility="Disabled" PanningMode="VerticalOnly">
+                <StackPanel Margin="12,0,12,6">
+                    <Border x:Name="Notice" Style="{StaticResource Card}" Margin="0,8,0,6" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="NoticeGlyph" FontFamily="{StaticResource IconFont}" FontSize="16"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,1,10,0" />
+                            <TextBlock x:Name="NoticeText" Grid.Column="1" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextSecondary}" />
+                        </Grid>
+                    </Border>
+
+                    <TextBlock x:Name="EmulatorsHeader" Style="{StaticResource SectionHeader}" Text="Emuladores" />
+                    <ItemsControl x:Name="EmulatorsList" ItemTemplate="{StaticResource DeviceCard}" Focusable="False" />
+
+                    <TextBlock x:Name="DevicesHeader" Style="{StaticResource SectionHeader}" Text="Dispositivos" />
+                    <ItemsControl x:Name="DevicesList" ItemTemplate="{StaticResource DeviceCard}" Focusable="False" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Pie -->
+            <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Divider}" Padding="16,9">
+                <Grid>
+                    <TextBlock x:Name="FooterText" FontSize="12" Foreground="{DynamicResource TextSecondary}" />
+                    <TextBlock x:Name="HotkeyText" FontSize="12" Foreground="{DynamicResource TextSecondary}"
+                               HorizontalAlignment="Right" />
+                </Grid>
+            </Border>
+        </StackPanel>
+    </Border>
+</Window>

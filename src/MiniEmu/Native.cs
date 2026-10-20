@@ -1,9 +1,10 @@
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Forms;
 
 namespace MiniEmu;
 
-/// <summary>Las pocas llamadas a Win32 que WinForms no expone.</summary>
+/// <summary>Las pocas llamadas a Win32 que ni WPF ni WinForms exponen.</summary>
 static class Native
 {
     public const uint MOD_ALT = 0x1, MOD_CONTROL = 0x2, MOD_SHIFT = 0x4, MOD_WIN = 0x8, MOD_NOREPEAT = 0x4000;
@@ -18,24 +19,47 @@ static class Native
     [DllImport("user32.dll")]
     public static extern bool DestroyIcon(IntPtr hIcon);
 
+    const int DWMWA_CLOAK = 13;
+    const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
     const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
-    const int DWMWA_BORDER_COLOR = 34;
+    const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
     const int DWMWCP_ROUND = 2;
+    const int DWMSBT_TRANSIENTWINDOW = 3; // acrílico, el de los paneles de Windows 11
 
     [DllImport("dwmapi.dll")]
     static extern int DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int size);
 
-    /// <summary>Esquinas redondeadas de Windows 11 (en Windows 10 la llamada se ignora).</summary>
-    public static void SetRoundedCorners(IntPtr hWnd)
-    {
-        int preference = DWMWCP_ROUND;
-        DwmSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref preference, sizeof(int));
-    }
+    static int SetAttribute(IntPtr hWnd, int attribute, int value) =>
+        DwmSetWindowAttribute(hWnd, attribute, ref value, sizeof(int));
 
-    public static void SetBorderColor(IntPtr hWnd, Color color)
+    /// <summary>Esquinas redondeadas de Windows 11 (en Windows 10 la llamada se ignora).</summary>
+    public static void SetRoundedCorners(IntPtr hWnd) => SetAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, DWMWCP_ROUND);
+
+    /// <summary>Marco y fondo acrílico en oscuro o claro.</summary>
+    public static void SetDarkMode(IntPtr hWnd, bool dark) => SetAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, dark ? 1 : 0);
+
+    /// <summary>Oculta la ventana sin sacarla de la pantalla: sirve para ubicarla antes de que se vea.</summary>
+    public static void SetCloak(IntPtr hWnd, bool cloak) => SetAttribute(hWnd, DWMWA_CLOAK, cloak ? 1 : 0);
+
+    /// <summary>Fondo acrílico del sistema. Solo existe desde Windows 11 22H2 (build 22621).</summary>
+    public static bool TrySetAcrylicBackdrop(IntPtr hWnd) =>
+        Environment.OSVersion.Version.Build >= 22621 &&
+        SetAttribute(hWnd, DWMWA_SYSTEMBACKDROP_TYPE, DWMSBT_TRANSIENTWINDOW) == 0;
+
+    const int GWL_EXSTYLE = -20;
+    const long WS_EX_TOOLWINDOW = 0x80, WS_EX_APPWINDOW = 0x40000;
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int index);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int index, IntPtr value);
+
+    /// <summary>Ventana de herramienta: no aparece en Alt+Tab ni en la barra de tareas.</summary>
+    public static void MakeToolWindow(IntPtr hWnd)
     {
-        int colorRef = color.R | (color.G << 8) | (color.B << 16); // COLORREF es 0x00BBGGRR
-        DwmSetWindowAttribute(hWnd, DWMWA_BORDER_COLOR, ref colorRef, sizeof(int));
+        long style = GetWindowLongPtr(hWnd, GWL_EXSTYLE).ToInt64();
+        SetWindowLongPtr(hWnd, GWL_EXSTYLE, new IntPtr((style | WS_EX_TOOLWINDOW) & ~WS_EX_APPWINDOW));
     }
 
     delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
