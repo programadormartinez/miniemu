@@ -21,6 +21,8 @@
   <ItemGroup>
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
+    <!-- UseWPF lo saca (System.IO.Path choca con System.Windows.Shapes.Path); acá no usamos Shapes. -->
+    <Using Include="System.IO" />
   </ItemGroup>
 
   <!-- Un solo .exe que no necesita .NET instalado. El RID (win-x64 / win-arm64) lo pasa el publish. -->
