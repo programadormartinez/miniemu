@@ -18,6 +18,26 @@ static class Native
     [DllImport("user32.dll")]
     public static extern bool DestroyIcon(IntPtr hIcon);
 
+    const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+    const int DWMWA_BORDER_COLOR = 34;
+    const int DWMWCP_ROUND = 2;
+
+    [DllImport("dwmapi.dll")]
+    static extern int DwmSetWindowAttribute(IntPtr hWnd, int attribute, ref int value, int size);
+
+    /// <summary>Esquinas redondeadas de Windows 11 (en Windows 10 la llamada se ignora).</summary>
+    public static void SetRoundedCorners(IntPtr hWnd)
+    {
+        int preference = DWMWCP_ROUND;
+        DwmSetWindowAttribute(hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref preference, sizeof(int));
+    }
+
+    public static void SetBorderColor(IntPtr hWnd, Color color)
+    {
+        int colorRef = color.R | (color.G << 8) | (color.B << 16); // COLORREF es 0x00BBGGRR
+        DwmSetWindowAttribute(hWnd, DWMWA_BORDER_COLOR, ref colorRef, sizeof(int));
+    }
+
     delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
     [DllImport("user32.dll")]

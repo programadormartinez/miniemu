@@ -45,7 +45,7 @@ con las acciones que necesitan un dispositivo encendido.
 
 ## Ajustes
 
-**Editar ajustes…** abre `%APPDATA%\MiniEmu\settings.json` en Notepad. Los
+**Ajustes** abre `%APPDATA%\MiniEmu\settings.json` en Notepad. Los
 cambios se aplican la próxima vez que abrís el menú.
 
 ```jsonc

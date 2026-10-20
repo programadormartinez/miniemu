@@ -96,7 +96,7 @@ sealed partial class AndroidSdk
             var sdk = new AndroidSdk(home);
             if (File.Exists(sdk.Emulator)) return sdk;
         }
-        problem = "No encontré el Android SDK. Instalá Android Studio o poné la ruta en androidHome (Editar ajustes…).";
+        problem = "No encontré el Android SDK. Instalá Android Studio o poné la ruta en androidHome (menú → Ajustes).";
         return null;
     }
 
